@@ -148,7 +148,7 @@ const PROJECTS = [
     name: "Abshia",
     desc: "State-wide health insurance platform streamlining claims and enrollment for multiple stakeholders across regions.",
     tech: ["Next.js", "TypeScript", "Go", "MySQL", "Tailwind"],
-    url: null,
+    url: "https://dev.abshia.net.ng",
     gradient: "linear-gradient(135deg, rgba(50,215,75,0.14), rgba(100,255,180,0.07))",
     dot: "#32D74B",
   },
@@ -765,8 +765,74 @@ function Dock({ active, setActive }: { active: SectionId; setActive: (s: Section
   );
 }
 
+// ── Lock Screen ───────────────────────────────────────────────────────────────
+function LockScreen({ onUnlock }: { onUnlock: () => void }) {
+  const [time, setTime] = useState("");
+  const [date, setDate] = useState("");
+  const [unlocking, setUnlocking] = useState(false);
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      setTime(now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }));
+      setDate(now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const handleClick = () => {
+    setUnlocking(true);
+    setTimeout(onUnlock, 450);
+  };
+
+  return (
+    <div
+      className={`desktop-bg h-screen w-screen flex flex-col items-center justify-center gap-5 select-none cursor-pointer${unlocking ? " lock-unlock" : ""}`}
+      style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif' }}
+      onClick={handleClick}
+    >
+      {/* Time */}
+      <div
+        className="text-white text-center font-thin tabular-nums"
+        style={{ fontSize: 96, lineHeight: 1, letterSpacing: "-3px" }}
+      >
+        {time}
+      </div>
+
+      {/* Date */}
+      <p className="text-lg font-light" style={{ color: "rgba(255,255,255,0.75)" }}>
+        {date}
+      </p>
+
+      {/* Avatar + name */}
+      <div className="flex flex-col items-center gap-3 mt-3">
+        <div
+          className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-semibold text-white"
+          style={{
+            background: "linear-gradient(135deg, #0A84FF 0%, #BF5AF2 100%)",
+            boxShadow: "0 0 0 3px rgba(255,255,255,0.15)",
+          }}
+        >
+          FO
+        </div>
+        <span className="text-white text-sm font-medium">Festus Omorowa</span>
+      </div>
+
+      {/* Hint */}
+      {!unlocking && (
+        <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.35)" }}>
+          Click anywhere to unlock
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Home() {
+  const [locked, setLocked] = useState(true);
   const [active, setActive] = useState<SectionId>("about");
 
   const SECTIONS: Record<SectionId, ReactNode> = {
@@ -778,6 +844,8 @@ export default function Home() {
     education:  <EducationSection />,
     contact:    <ContactSection />,
   };
+
+  if (locked) return <LockScreen onUnlock={() => setLocked(false)} />;
 
   return (
     <div
